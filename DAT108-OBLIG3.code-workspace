@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {},
+	"extensions": {
+		"recommendations": [
+			"formulahendry.auto-complete-tag",
+			"dzhavat.css-flexbox-cheatsheet",
+			"ecmel.vscode-html-css",
+			"yandeu.five-server",
+			"esbenp.prettier-vscode",
+			"visualstudioexptteam.vscodeintellicode",
+			"visualstudioexptteam.vscodeintellicode-completions",
+			"ms-vscode.live-server"
+		]
+	}
+}

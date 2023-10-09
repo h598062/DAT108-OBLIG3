@@ -34,7 +34,25 @@ class DeltagerManager {
 	}
 
 	#finndeltager() {
-		// Fyll inn kode
+		const inputElm = this.#finndeltagerElm.getElementsByTagName("input")[0];
+		const tall = inputElm.value;
+		const treff = this.#deltagere.find((d) => d.startnummer === parseInt(tall));
+		const resultatOkElm = this.#finndeltagerElm.getElementsByClassName("resultatok")[0];
+		const resultatManglerElm = this.#finndeltagerElm.getElementsByClassName("resultatmangler")[0];
+		if (treff != undefined || treff != null) {
+			resultatOkElm.classList.remove("hidden");
+			const resultattekst = resultatOkElm.getElementsByTagName("dd");
+			resultattekst[0].textContent = treff.startnummer;
+			resultattekst[1].textContent = treff.navn;
+			resultattekst[2].textContent = treff.tid;
+			resultatManglerElm.classList.add("hidden");
+			inputElm.setCustomValidity("");
+		} else {
+			resultatOkElm.classList.add("hidden");
+			resultatManglerElm.classList.remove("hidden");
+			inputElm.setCustomValidity(`Fant ikke deltager med startnummer ${tall}`);
+		}
+		inputElm.reportValidity();
 	}
 
 	#beregnstatistikk() {

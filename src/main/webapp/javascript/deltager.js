@@ -108,7 +108,17 @@ class DeltagerManager {
 
 		let errored = false;
 
-		// TODO: valider om input inneholder ulovlige tegn, f.eks. kun (A-Å a-å 0-9 :) er gyldig
+		const ulovligeTegnReg = /[^\s\p{L}\p{N}:-]/gu;
+		try {
+			const matchedeUlovligeTegn = deltagerString.match(ulovligeTegnReg);
+			if (matchedeUlovligeTegn != null) {
+				throw new Error(`Ulovlige tegn funnet: ${matchedeUlovligeTegn.join(" ")}`);
+			}
+		} catch (e) {
+			console.error(e);
+			inputElm.setCustomValidity(e.message);
+			errored = true;
+		}
 
 		// navn håndtering
 		// vil lage en liste med navn som case-fikses

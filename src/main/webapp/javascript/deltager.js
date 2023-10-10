@@ -57,6 +57,41 @@ class DeltagerManager {
 
 	#beregnstatistikk() {
 		// Fyll inn kode
+		const inputElm = this.#statElm.getElementsByTagName("input");
+		const tidStringFra = inputElm[0].value;
+		const tidStringTil = inputElm[1].value;
+		console.log(tidStringFra);
+		console.log(tidStringTil);
+
+		try {
+			const tidSekFra = this.#parseTidTilSek(tidStringFra);
+			const tidSekTil = this.#parseTidTilSek(tidStringTil);
+			if (tidSekFra >= tidSekTil) {
+				inputElm[0].setCustomValidity("'Fra' verdi må være mindre enn 'til' verdi");
+				inputElm[1].setCustomValidity("'Til' verdi må være større enn 'fra' verdi");
+			} else {
+				const treff = this.#deltagere.filter((d) => {
+					const t = this.#parseTidTilSek(d.tid);
+					if (t <= tidSekTil && t >= tidSekFra) {
+						return true;
+					} else {
+						return false;
+					}
+				});
+				inputElm[0].setCustomValidity("");
+				inputElm[1].setCustomValidity("");
+				console.log(treff);
+				const avsnittElms = this.#statElm.getElementsByTagName("span"); // hent en liste av alle child span element av #stat elementet, dette er de 3 som skal endres på
+				avsnittElms[0].textContent = `${treff.length}`;
+				avsnittElms[1].textContent = `${tidStringFra}`;
+				avsnittElms[2].textContent = `${tidStringTil}`;
+				this.#statElm.getElementsByClassName("resultat")[0].classList.remove("hidden");
+			}
+			inputElm[0].reportValidity();
+			inputElm[1].reportValidity();
+		} catch (e) {
+			console.log(e);
+		}
 	}
 
 	#registrerdeltager() {

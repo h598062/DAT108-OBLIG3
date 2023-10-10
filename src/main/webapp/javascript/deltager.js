@@ -60,8 +60,6 @@ class DeltagerManager {
 		const inputElm = this.#statElm.getElementsByTagName("input");
 		const tidStringFra = inputElm[0].value;
 		const tidStringTil = inputElm[1].value;
-		console.log(tidStringFra);
-		console.log(tidStringTil);
 
 		try {
 			const tidSekFra = this.#parseTidTilSek(tidStringFra);

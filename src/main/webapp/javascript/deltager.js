@@ -69,6 +69,7 @@ class DeltagerManager {
 			if (tidSekFra >= tidSekTil) {
 				inputElm[0].setCustomValidity("'Fra' verdi må være mindre enn 'til' verdi");
 				inputElm[1].setCustomValidity("'Til' verdi må være større enn 'fra' verdi");
+				this.#statElm.getElementsByClassName("resultat")[0].classList.add("hidden");
 			} else {
 				const treff = this.#deltagere.filter((d) => {
 					const t = this.#parseTidTilSek(d.tid);

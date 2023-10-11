@@ -58,15 +58,60 @@ class DeltagerManager {
 	#beregnstatistikk() {
 		// Fyll inn kode
 		const inputElm = this.#statElm.getElementsByTagName("input");
-		const tidStringFra = inputElm[0].value;
-		const tidStringTil = inputElm[1].value;
+		const fraElm = inputElm[0];
+		const tilElm = inputElm[1];
+		let errored = false;
 
-		try {
-			const tidSekFra = this.#parseTidTilSek(tidStringFra);
-			const tidSekTil = this.#parseTidTilSek(tidStringTil);
+		// clear vekk custom validity melding slik at innebygget validity check funker skikkelig
+		fraElm.setCustomValidity("");
+		tilElm.setCustomValidity("");
+
+		// workaround for innebygget validity check som godtar ved første input i chrome *noen* ganger
+		fraElm.checkValidity();
+		tilElm.checkValidity();
+
+		// log statements for å se verdi til feltene, og om de er valid
+		console.log(`"Fra" input value: ${fraElm.value}, er valid: ${fraElm.validity.valid}`);
+		console.log(`"Til" input value: ${tilElm.value}, er valid: ${tilElm.validity.valid}`);
+
+		// OBS!!
+		// time input validity ser ut til å være litt buggy i chrome
+		// og ikke oppføre seg helt som forventet i både firefox og chrome
+		// i chrome er det mulig å kun oppgi time og minutt, og dette blir da valid i den innebygde html pattern
+		// i firefox må alle tre feltene oppgis
+		// i oppgaven vil de at vi skal validere at alle tidspunktene er oppgitt, men dette er da ikke mulig da value ikke blir satt når den er invalid
+		// som da gjør at vi får en funksjons kollisjon med det at tomme felt skal enten ha verdien "00:00:00" eller "23:59:59"
+		// fra javascript siden blir tomt felt og invalid pattern match registrert likt
+		// en workaround er å sjekke om feltet er invalid, og deretter lese value om den er en tom streng, som da vil bety at ikke alle feltene er fylt ut
+		// da må det også lages en workaround for chrome som gjør hh:mm valid
+
+		// innebygget validering workaround + tomt felt
+		if (fraElm.validity.valid && fraElm.value == "") {
+			fraElm.value = "00:00:00";
+		}
+		if (tilElm.validity.valid && tilElm.value == "") {
+			tilElm.value = "23:59:59";
+		}
+
+		const fraString = fraElm.value;
+		const tilString = tilElm.value;
+
+		// chrome bug workaround
+		if (fraString.length < 8) {
+			fraElm.setCustomValidity("Feil i input, sørg for at time, minutt og sekund er oppgitt");
+			errored = true;
+		}
+		if (tilString.length < 8) {
+			tilElm.setCustomValidity("Feil i input, sørg for at time, minutt og sekund er oppgitt");
+			errored = true;
+		}
+
+		if (!errored) {
+			const tidSekFra = this.#parseTidTilSek(fraString);
+			const tidSekTil = this.#parseTidTilSek(tilString);
 			if (tidSekFra >= tidSekTil) {
-				inputElm[0].setCustomValidity("'Fra' verdi må være mindre enn 'til' verdi");
-				inputElm[1].setCustomValidity("'Til' verdi må være større enn 'fra' verdi");
+				fraElm.setCustomValidity("'Fra' verdi må være mindre enn 'til' verdi");
+				tilElm.setCustomValidity("'Til' verdi må være større enn 'fra' verdi");
 				this.#statElm.getElementsByClassName("resultat")[0].classList.add("hidden");
 			} else {
 				const treff = this.#deltagere.filter((d) => {
@@ -77,20 +122,20 @@ class DeltagerManager {
 						return false;
 					}
 				});
-				inputElm[0].setCustomValidity("");
-				inputElm[1].setCustomValidity("");
+				fraElm.setCustomValidity("");
+				tilElm.setCustomValidity("");
 				console.log(treff);
 				const avsnittElms = this.#statElm.getElementsByTagName("span"); // hent en liste av alle child span element av #stat elementet, dette er de 3 som skal endres på
 				avsnittElms[0].textContent = `${treff.length}`;
-				avsnittElms[1].textContent = `${tidStringFra}`;
-				avsnittElms[2].textContent = `${tidStringTil}`;
+				avsnittElms[1].textContent = `${fraString}`;
+				avsnittElms[2].textContent = `${tilString}`;
 				this.#statElm.getElementsByClassName("resultat")[0].classList.remove("hidden");
 			}
-			inputElm[0].reportValidity();
-			inputElm[1].reportValidity();
-		} catch (e) {
-			console.log(e);
+		} else {
+			this.#statElm.getElementsByClassName("resultat")[0].classList.add("hidden");
 		}
+		fraElm.reportValidity();
+		tilElm.reportValidity();
 	}
 
 	#registrerdeltager() {
@@ -229,7 +274,7 @@ class DeltagerManager {
 
 	/**
 	 * Gjør om en "hh:mm:ss" formatert tidstreng til antall sekunder
-	 * @param {string} tidStr
+	 * @param {string} tidStr - format hh:mm:ss
 	 * @returns {number} tidstreng gjort om til sekunder
 	 */
 	#parseTidTilSek(tidStr) {

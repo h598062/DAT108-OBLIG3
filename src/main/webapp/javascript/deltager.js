@@ -35,23 +35,38 @@ class DeltagerManager {
 
 	#finndeltager() {
 		const inputElm = this.#finndeltagerElm.getElementsByTagName("input")[0];
-		const tall = inputElm.value;
-		const treff = this.#deltagere.find((d) => d.startnummer === parseInt(tall));
+		const tallStr = inputElm.value;
 		const resultatOkElm = this.#finndeltagerElm.getElementsByClassName("resultatok")[0];
 		const resultatManglerElm = this.#finndeltagerElm.getElementsByClassName("resultatmangler")[0];
-		if (treff != undefined || treff != null) {
-			resultatOkElm.classList.remove("hidden");
-			const resultattekst = resultatOkElm.getElementsByTagName("dd");
-			resultattekst[0].textContent = treff.startnummer;
-			resultattekst[1].textContent = treff.navn;
-			resultattekst[2].textContent = treff.tid;
+
+		if (tallStr == "") {
 			resultatManglerElm.classList.add("hidden");
-			inputElm.setCustomValidity("");
-		} else {
 			resultatOkElm.classList.add("hidden");
-			resultatManglerElm.classList.remove("hidden");
-			inputElm.setCustomValidity(`Fant ikke deltager med startnummer ${tall}`);
+			inputElm.setCustomValidity("Input er ikke et gyldig startnummer");
+		} else {
+			const tall = parseInt(tallStr);
+			if (tall < 1) {
+				resultatManglerElm.classList.add("hidden");
+				resultatOkElm.classList.add("hidden");
+				inputElm.setCustomValidity("Startnummer må være minst 1");
+			} else {
+				const treff = this.#deltagere.find((d) => d.startnummer === tall);
+				if (treff != undefined || treff != null) {
+					resultatOkElm.classList.remove("hidden");
+					const resultattekst = resultatOkElm.getElementsByTagName("dd");
+					resultattekst[0].textContent = treff.startnummer;
+					resultattekst[1].textContent = treff.navn;
+					resultattekst[2].textContent = treff.tid;
+					resultatManglerElm.classList.add("hidden");
+					inputElm.setCustomValidity("");
+				} else {
+					resultatOkElm.classList.add("hidden");
+					resultatManglerElm.classList.remove("hidden");
+					inputElm.setCustomValidity(`Fant ikke deltager med startnummer ${tallStr}`);
+				}
+			}
 		}
+
 		inputElm.reportValidity();
 	}
 
